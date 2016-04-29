@@ -35,6 +35,7 @@ final class Configuration implements ConfigurationInterface
             'asana',
             'auth0',
             'azure',
+            'azureb2c',
             'bitbucket2',
             'bitly',
             'box',
