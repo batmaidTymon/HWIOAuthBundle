@@ -33,6 +33,7 @@ class Configuration implements ConfigurationInterface
             'amazon',
             'auth0',
             'azure',
+            'azureb2c',
             'bitbucket2',
             'bitly',
             'box',
