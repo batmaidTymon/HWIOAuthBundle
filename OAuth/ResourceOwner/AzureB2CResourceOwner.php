@@ -14,6 +14,7 @@ namespace HWI\Bundle\OAuthBundle\OAuth\ResourceOwner;
 use HWI\Bundle\OAuthBundle\Security\Core\Authentication\Token\IdToken;
 use HWI\Bundle\OAuthBundle\Security\Core\Authentication\Token\OAuthToken;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Buzz\Message\MessageInterface as HttpMessageInterface;
 
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 
@@ -106,15 +107,20 @@ class AzureB2CResourceOwner extends GenericOAuth2ResourceOwner
             ]);
     }
 
+    protected function getResponseContent(HttpMessageInterface $rawResponse)
+    {
+        $response = parent::getResponseContent($rawResponse);
+        //The id_token should be used as the access_token according to
+        //https://azure.microsoft.com/en-us/documentation/articles/active-directory-b2c-reference-oidc/
+        $response["access_token"] = $response['id_token'];
+        return $response;
+    }
+
     /**
      * {@inheritDoc}
      */
     public function getUserInformation(array $accessToken, array $extraParameters = array())
     {
-        //The id_token should be used as the access_token according to
-        //https://azure.microsoft.com/en-us/documentation/articles/active-directory-b2c-reference-oidc/
-        $accessToken["access_token"] = $accessToken['id_token'];
-
         // from http://stackoverflow.com/a/28748285/624544
         list(, $jwt,) = explode('.', $accessToken['id_token'], 3);
 
