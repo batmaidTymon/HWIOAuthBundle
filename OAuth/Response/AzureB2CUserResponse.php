@@ -16,7 +16,7 @@ class AzureB2CUserResponse extends PathUserResponse
 
     public function getZip()
     {
-        return $this->getValueForPath('zip');
+        return $this->getValueForPath('postalCode');
     }
 
     public function getCountry()
