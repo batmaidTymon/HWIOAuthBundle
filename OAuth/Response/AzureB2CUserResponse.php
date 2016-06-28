@@ -28,4 +28,9 @@ class AzureB2CUserResponse extends PathUserResponse
     {
         return $this->getValueForPath('city');
     }
+
+    public function getMobile()
+    {
+        return $this->getValueForPath('mobile');
+    }
 }
