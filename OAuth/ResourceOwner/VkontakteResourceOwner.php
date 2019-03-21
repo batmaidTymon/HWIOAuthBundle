@@ -12,11 +12,12 @@
 namespace HWI\Bundle\OAuthBundle\OAuth\ResourceOwner;
 
 use HWI\Bundle\OAuthBundle\Security\Core\Authentication\Token\OAuthToken;
-use Symfony\Component\OptionsResolver\OptionsResolver;
+use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\OptionsResolver\Options;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
- * VkontakteResourceOwner
+ * VkontakteResourceOwner.
  *
  * @author Adrov Igor <nucleartux@gmail.com>
  * @author Vladislav Vlastovskiy <me@vlastv.ru>
@@ -25,67 +26,71 @@ use Symfony\Component\OptionsResolver\Options;
 class VkontakteResourceOwner extends GenericOAuth2ResourceOwner
 {
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected $paths = array(
-        'identifier' => 'response.0.uid',
-        'nickname'   => 'nickname',
-        'firstname'  => 'response.0.first_name',
-        'lastname'   => 'response.0.last_name',
-        'realname'   => array('response.0.last_name', 'response.0.first_name'),
-        'profilepicture' => 'response.0.photo',
-        'email'          => 'email'
+        'identifier' => 'response.0.id',
+        'nickname' => 'response.0.nickname',
+        'firstname' => 'response.0.first_name',
+        'lastname' => 'response.0.last_name',
+        'realname' => array('response.0.last_name', 'response.0.first_name'),
+        'profilepicture' => 'response.0.photo_medium',
+        'email' => 'email',
     );
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getUserInformation(array $accessToken, array $extraParameters = array())
     {
         $url = $this->normalizeUrl($this->options['infos_url'], array(
             'access_token' => $accessToken['access_token'],
-            'fields'       => $this->options['fields'],
-            'name_case'    => $this->options['name_case'],
+            'fields' => $this->options['fields'],
+            'name_case' => $this->options['name_case'],
+            'v' => $this->options['api_version'],
         ));
 
-        $content = $this->doGetUserInformationRequest($url)->getContent();
+        $content = $this->doGetUserInformationRequest($url);
 
         $response = $this->getUserResponse();
-        $response->setResponse($content);
+        // This will translate string response into array
+        $response->setData($content instanceof ResponseInterface ? (string) $content->getBody() : $content);
         $response->setResourceOwner($this);
         $response->setOAuthToken(new OAuthToken($accessToken));
 
-        $content = $response->getResponse();
+        $content = $response->getData();
         $content['email'] = isset($accessToken['email']) ? $accessToken['email'] : null;
-        if (isset($content['screen_name'])) {
-            $content['nickname'] = $content['screen_name'];
-        } else {
-            $content['nickname'] = isset($content['nickname']) ? $content['nickname'] : null;
-        }
 
-        $response->setResponse($content);
+        $response->setData($content);
+
+        if (!$response->getNickname() && isset($content['response'][0]['screen_name'])) {
+            $content['response'][0]['nickname'] = $content['response'][0]['screen_name'];
+            $response->setData($content);
+        }
 
         return $response;
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function configureOptions(OptionsResolver $resolver)
     {
         parent::configureOptions($resolver);
 
         $resolver->setDefaults(array(
-            'authorization_url'   => 'https://oauth.vk.com/authorize',
-            'access_token_url'    => 'https://oauth.vk.com/access_token',
-            'infos_url'           => 'https://api.vk.com/method/users.get',
+            'authorization_url' => 'https://oauth.vk.com/authorize',
+            'access_token_url' => 'https://oauth.vk.com/access_token',
+            'infos_url' => 'https://api.vk.com/method/users.get',
 
-            'scope'               => 'email',
+            'api_version' => '5.73',
+
+            'scope' => 'email',
 
             'use_commas_in_scope' => true,
 
-            'fields'              => 'nickname,photo_medium,screen_name,email',
-            'name_case'           => null,
+            'fields' => 'nickname,photo_medium,screen_name,email',
+            'name_case' => null,
         ));
 
         $fieldsNormalizer = function (Options $options, $value) {
@@ -96,13 +101,6 @@ class VkontakteResourceOwner extends GenericOAuth2ResourceOwner
             return is_array($value) ? implode(',', $value) : $value;
         };
 
-        // Symfony <2.6 BC
-        if (method_exists($resolver, 'setNormalizer')) {
-            $resolver->setNormalizer('fields', $fieldsNormalizer);
-        } else {
-            $resolver->setNormalizers(array(
-                'fields' => $fieldsNormalizer,
-            ));
-        }
+        $resolver->setNormalizer('fields', $fieldsNormalizer);
     }
 }

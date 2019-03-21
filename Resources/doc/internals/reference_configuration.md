@@ -89,15 +89,8 @@ hwi_oauth:
 #        registration_form: my_registration_form
 #        account_connector: my_link_provider # can be the same as your user provider
 
-    # optional HTTP Client configuration
-    http_client:
-        timeout:       5
-        verify_peer:   true
-        ignore_errors: true
-        max_redirects: 5
-
-    # allows to switch templating engine for bundle views
-    #templating_engine: "php"
+    # allows to change rule that is used for authentication checks
+    grant_rule: 'IS_AUTHENTICATED_FULLY' # default 'IS_AUTHENTICATED_REMEMBERED'
 
 ```
 

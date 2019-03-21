@@ -11,9 +11,8 @@
 
 namespace HWI\Bundle\OAuthBundle;
 
-use HWI\Bundle\OAuthBundle\DependencyInjection\CompilerPass\RequestCompilerPass;
-use HWI\Bundle\OAuthBundle\DependencyInjection\HWIOAuthExtension;
 use HWI\Bundle\OAuthBundle\DependencyInjection\CompilerPass\SetResourceOwnerServiceNameCompilerPass;
+use HWI\Bundle\OAuthBundle\DependencyInjection\HWIOAuthExtension;
 use HWI\Bundle\OAuthBundle\DependencyInjection\Security\Factory\OAuthFactory;
 use Symfony\Bundle\SecurityBundle\DependencyInjection\SecurityExtension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -26,7 +25,7 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 class HWIOAuthBundle extends Bundle
 {
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function build(ContainerBuilder $container)
     {
@@ -37,7 +36,6 @@ class HWIOAuthBundle extends Bundle
         $extension->addSecurityListenerFactory(new OAuthFactory());
 
         $container->addCompilerPass(new SetResourceOwnerServiceNameCompilerPass());
-        $container->addCompilerPass(new RequestCompilerPass());
     }
 
     /**

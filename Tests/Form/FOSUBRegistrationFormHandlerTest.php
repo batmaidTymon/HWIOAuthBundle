@@ -11,18 +11,25 @@
 
 namespace HWI\Bundle\OAuthBundle\Tests\Form;
 
+use FOS\UserBundle\Mailer\MailerInterface;
+use FOS\UserBundle\Model\UserInterface;
+use FOS\UserBundle\Model\UserManagerInterface;
 use HWI\Bundle\OAuthBundle\Form\FOSUBRegistrationFormHandler;
+use HWI\Bundle\OAuthBundle\OAuth\Response\UserResponseInterface;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\Form\Form;
 use Symfony\Component\HttpFoundation\Request;
 
-class FOSUBRegistrationFormHandlerTest extends \PHPUnit_Framework_TestCase
+class FOSUBRegistrationFormHandlerTest extends TestCase
 {
     public function testProcessReturnsFalseForNotPostRequest()
     {
         $formMock = $this->getForm(false);
 
-        $response = $this->getMock('HWI\Bundle\OAuthBundle\OAuth\Response\UserResponseInterface');
+        $response = $this->getMockBuilder(UserResponseInterface::class)
+            ->getMock();
 
-        $handler = new FOSUBRegistrationFormHandler($this->getUserManager(false), $this->getMailer());
+        $handler = new FOSUBRegistrationFormHandler($this->getUserManager(), $this->getMailer());
 
         $this->assertFalse($handler->process(Request::create('/'), $formMock, $response));
     }
@@ -55,41 +62,43 @@ class FOSUBRegistrationFormHandlerTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($handler->process(Request::create('/', 'POST'), $formMock, $this->getResponse()));
     }
 
-    private function getUserManager($createUser = true)
+    private function getUserManager()
     {
-        $mock = $this->getMock('FOS\UserBundle\Model\UserManagerInterface');
+        $mock = $this->getMockBuilder(UserManagerInterface::class)
+            ->getMock();
 
-        if ($createUser) {
-            $userMock = $this->getMock('FOS\UserBundle\Model\UserInterface');
-            $userMock
-                ->expects($this->once())
-                ->method('setEnabled')
-                ->with(true)
-            ;
+        $userMock = $this->getMockBuilder(UserInterface::class)
+            ->getMock();
+        $userMock
+            ->expects($this->once())
+            ->method('setEnabled')
+            ->with(true)
+        ;
 
-            $mock
-                ->expects($this->once())
-                ->method('createUser')
-                ->willReturn($userMock)
-            ;
-        }
+        $mock
+            ->expects($this->once())
+            ->method('createUser')
+            ->willReturn($userMock)
+        ;
 
         return $mock;
     }
 
     private function getMailer()
     {
-        return $this->getMock('FOS\UserBundle\Mailer\MailerInterface');
+        return $this->getMockBuilder(MailerInterface::class)
+            ->getMock();
     }
 
     private function getResponse()
     {
-        return $this->getMock('HWI\Bundle\OAuthBundle\OAuth\Response\UserResponseInterface');
+        return $this->getMockBuilder(UserResponseInterface::class)
+            ->getMock();
     }
 
     private function getForm($handle = true)
     {
-        $formMock = $this->getMockBuilder('Symfony\Component\Form\Form')
+        $formMock = $this->getMockBuilder(Form::class)
             ->disableOriginalConstructor()
             ->getMock()
         ;

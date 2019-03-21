@@ -11,16 +11,18 @@
 
 namespace HWI\Bundle\OAuthBundle\Tests\Security\Core\User;
 
+use HWI\Bundle\OAuthBundle\OAuth\Response\UserResponseInterface;
 use HWI\Bundle\OAuthBundle\Security\Core\User\OAuthUser;
 use HWI\Bundle\OAuthBundle\Security\Core\User\OAuthUserProvider;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\User\User;
 
-class OAuthUserProviderTest extends \PHPUnit_Framework_TestCase
+class OAuthUserProviderTest extends TestCase
 {
     /**
      * @var OAuthUserProvider
      */
-    protected $provider;
+    private $provider;
 
     public function setUp()
     {
@@ -30,7 +32,7 @@ class OAuthUserProviderTest extends \PHPUnit_Framework_TestCase
     public function testLoadUserByUsername()
     {
         $user = $this->provider->loadUserByUsername('asm89');
-        $this->assertInstanceOf('\HWI\Bundle\OAuthBundle\Security\Core\User\OAuthUser', $user);
+        $this->assertInstanceOf(OAuthUser::class, $user);
         $this->assertEquals('asm89', $user->getUsername());
     }
 
@@ -63,7 +65,9 @@ class OAuthUserProviderTest extends \PHPUnit_Framework_TestCase
 
     public function testLoadUserByOAuthUserResponse()
     {
-        $responseMock = $this->getMock('HWI\Bundle\OAuthBundle\OAuth\Response\UserResponseInterface');
+        $responseMock = $this->getMockBuilder(UserResponseInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $responseMock
             ->expects($this->once())
@@ -72,7 +76,7 @@ class OAuthUserProviderTest extends \PHPUnit_Framework_TestCase
         ;
 
         $user = $this->provider->loadUserByOAuthUserResponse($responseMock);
-        $this->assertInstanceOf('\HWI\Bundle\OAuthBundle\Security\Core\User\OAuthUser', $user);
+        $this->assertInstanceOf(OAuthUser::class, $user);
         $this->assertEquals('asm89', $user->getUsername());
     }
 }

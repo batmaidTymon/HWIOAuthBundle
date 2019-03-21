@@ -14,22 +14,23 @@ namespace HWI\Bundle\OAuthBundle\OAuth\ResourceOwner;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
- * SlackResourceOwner
+ * SlackResourceOwner.
  *
  * @author Baptiste Clavié <clavie.b@gmail.com>
  */
 class SlackResourceOwner extends GenericOAuth2ResourceOwner
 {
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected $paths = array(
-        'identifier' => 'user_id',
-        'nickname' => 'user',
+        'identifier' => 'user.id',
+        'nickname' => 'user.name',
+        'email' => 'user.email',
     );
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function configureOptions(OptionsResolver $resolver)
     {
@@ -37,13 +38,13 @@ class SlackResourceOwner extends GenericOAuth2ResourceOwner
 
         $resolver->setDefaults(array(
             'authorization_url' => 'https://slack.com/oauth/authorize',
-            'access_token_url'  => 'https://slack.com/api/oauth.access',
-            'infos_url'         => 'https://slack.com/api/auth.test',
+            'access_token_url' => 'https://slack.com/api/oauth.access',
+            'infos_url' => 'https://slack.com/api/users.identity',
 
-            'scope'             => 'identify',
+            'scope' => 'identify',
 
             'use_bearer_authorization' => false,
-            'attr_name'                => 'token',
+            'attr_name' => 'token',
         ));
     }
 }

@@ -16,7 +16,7 @@ use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 /**
- * Configuration for the extension
+ * Configuration for the extension.
  *
  * @author Alexander <iam.asm89@gmail.com>
  */
@@ -31,6 +31,7 @@ class Configuration implements ConfigurationInterface
     private static $resourceOwners = array(
         'oauth2' => array(
             'amazon',
+            'asana',
             'auth0',
             'azure',
             'azureb2c',
@@ -38,6 +39,7 @@ class Configuration implements ConfigurationInterface
             'bitly',
             'box',
             'bufferapp',
+            'clever',
             'dailymotion',
             'deviantart',
             'deezer',
@@ -48,13 +50,16 @@ class Configuration implements ConfigurationInterface
             'fiware',
             'foursquare',
             'github',
+            'gitlab',
             'google',
             'youtube',
             'hubic',
             'instagram',
+            'jawbone',
             'linkedin',
             'mailru',
             'odnoklassniki',
+            'office365',
             'paypal',
             'qq',
             'reddit',
@@ -71,11 +76,12 @@ class Configuration implements ConfigurationInterface
             'trakt',
             'twitch',
             'vkontakte',
-            'wechat',
             'windows_live',
             'wordpress',
+            'wunderlist',
             'yandex',
             '37signals',
+            'itembase',
         ),
         'oauth1' => array(
             'bitbucket',
@@ -100,11 +106,12 @@ class Configuration implements ConfigurationInterface
      */
     public static function getResourceOwnerType($resourceOwner)
     {
+        $resourceOwner = strtolower($resourceOwner);
         if ('oauth1' === $resourceOwner || 'oauth2' === $resourceOwner) {
             return $resourceOwner;
         }
 
-        if (in_array($resourceOwner, static::$resourceOwners['oauth1'])) {
+        if (in_array($resourceOwner, static::$resourceOwners['oauth1'], true)) {
             return 'oauth1';
         }
 
@@ -116,15 +123,20 @@ class Configuration implements ConfigurationInterface
      *
      * @param string $resourceOwner
      *
-     * @return Boolean
+     * @return bool
      */
     public static function isResourceOwnerSupported($resourceOwner)
     {
+        $resourceOwner = strtolower($resourceOwner);
         if ('oauth1' === $resourceOwner || 'oauth2' === $resourceOwner) {
             return true;
         }
 
-        return in_array($resourceOwner, static::$resourceOwners['oauth1']) || in_array($resourceOwner, static::$resourceOwners['oauth2']);
+        if (in_array($resourceOwner, static::$resourceOwners['oauth1'], true)) {
+            return true;
+        }
+
+        return in_array($resourceOwner, static::$resourceOwners['oauth2'], true);
     }
 
     /**
@@ -138,16 +150,26 @@ class Configuration implements ConfigurationInterface
 
         $rootNode = $builder->root('hwi_oauth');
         $rootNode
+            ->fixXmlConfig('firewall_name')
             ->children()
                 ->arrayNode('firewall_names')
                     ->isRequired()
-                    ->cannotBeEmpty()
+                    ->requiresAtLeastOneElement()
                     ->prototype('scalar')->end()
                 ->end()
                 ->scalarNode('target_path_parameter')->defaultNull()->end()
                 ->booleanNode('use_referer')->defaultFalse()->end()
-                ->scalarNode('templating_engine')->defaultValue('twig')->end()
+                ->booleanNode('failed_use_referer')->defaultFalse()->end()
                 ->scalarNode('failed_auth_path')->defaultValue('hwi_oauth_connect')->end()
+                ->scalarNode('grant_rule')
+                    ->defaultValue('IS_AUTHENTICATED_REMEMBERED')
+                    ->validate()
+                        ->ifTrue(function ($role) {
+                            return !('IS_AUTHENTICATED_REMEMBERED' === $role || 'IS_AUTHENTICATED_FULLY' === $role);
+                        })
+                        ->thenInvalid('Unknown grant role set "%s".')
+                    ->end()
+                ->end()
             ->end()
         ;
 
@@ -173,7 +195,7 @@ class Configuration implements ConfigurationInterface
                             ->scalarNode('base_url')->end()
                             ->scalarNode('access_token_url')
                                 ->validate()
-                                    ->ifTrue(function($v) {
+                                    ->ifTrue(function ($v) {
                                         return empty($v);
                                     })
                                     ->thenUnset()
@@ -181,7 +203,7 @@ class Configuration implements ConfigurationInterface
                             ->end()
                             ->scalarNode('authorization_url')
                                 ->validate()
-                                    ->ifTrue(function($v) {
+                                    ->ifTrue(function ($v) {
                                         return empty($v);
                                     })
                                     ->thenUnset()
@@ -189,7 +211,7 @@ class Configuration implements ConfigurationInterface
                             ->end()
                             ->scalarNode('request_token_url')
                                 ->validate()
-                                    ->ifTrue(function($v) {
+                                    ->ifTrue(function ($v) {
                                         return empty($v);
                                     })
                                     ->thenUnset()
@@ -197,7 +219,7 @@ class Configuration implements ConfigurationInterface
                             ->end()
                             ->scalarNode('revoke_token_url')
                                 ->validate()
-                                    ->ifTrue(function($v) {
+                                    ->ifTrue(function ($v) {
                                         return empty($v);
                                     })
                                     ->thenUnset()
@@ -205,7 +227,7 @@ class Configuration implements ConfigurationInterface
                             ->end()
                             ->scalarNode('infos_url')
                                 ->validate()
-                                    ->ifTrue(function($v) {
+                                    ->ifTrue(function ($v) {
                                         return empty($v);
                                     })
                                     ->thenUnset()
@@ -215,7 +237,7 @@ class Configuration implements ConfigurationInterface
                             ->scalarNode('client_secret')->cannotBeEmpty()->end()
                             ->scalarNode('realm')
                                 ->validate()
-                                    ->ifTrue(function($v) {
+                                    ->ifTrue(function ($v) {
                                         return empty($v);
                                     })
                                     ->thenUnset()
@@ -223,7 +245,7 @@ class Configuration implements ConfigurationInterface
                             ->end()
                             ->scalarNode('scope')
                                 ->validate()
-                                    ->ifTrue(function($v) {
+                                    ->ifTrue(function ($v) {
                                         return empty($v);
                                     })
                                     ->thenUnset()
@@ -231,7 +253,7 @@ class Configuration implements ConfigurationInterface
                             ->end()
                             ->scalarNode('user_response_class')
                                 ->validate()
-                                    ->ifTrue(function($v) {
+                                    ->ifTrue(function ($v) {
                                         return empty($v);
                                     })
                                     ->thenUnset()
@@ -239,7 +261,15 @@ class Configuration implements ConfigurationInterface
                             ->end()
                             ->scalarNode('service')
                                 ->validate()
-                                    ->ifTrue(function($v) {
+                                    ->ifTrue(function ($v) {
+                                        return empty($v);
+                                    })
+                                    ->thenUnset()
+                                ->end()
+                            ->end()
+                            ->scalarNode('class')
+                                ->validate()
+                                    ->ifTrue(function ($v) {
                                         return empty($v);
                                     })
                                     ->thenUnset()
@@ -247,13 +277,13 @@ class Configuration implements ConfigurationInterface
                             ->end()
                             ->scalarNode('type')
                                 ->validate()
-                                    ->ifTrue(function($type) {
+                                    ->ifTrue(function ($type) {
                                         return !Configuration::isResourceOwnerSupported($type);
                                     })
                                     ->thenInvalid('Unknown resource owner type "%s".')
                                 ->end()
                                 ->validate()
-                                    ->ifTrue(function($v) {
+                                    ->ifTrue(function ($v) {
                                         return empty($v);
                                     })
                                     ->thenUnset()
@@ -263,7 +293,7 @@ class Configuration implements ConfigurationInterface
                                 ->useAttributeAsKey('name')
                                 ->prototype('variable')
                                     ->validate()
-                                        ->ifTrue(function($v) {
+                                        ->ifTrue(function ($v) {
                                             if (null === $v) {
                                                 return true;
                                             }
@@ -288,7 +318,7 @@ class Configuration implements ConfigurationInterface
                             ->end()
                         ->end()
                         ->validate()
-                            ->ifTrue(function($c) {
+                            ->ifTrue(function ($c) {
                                 // skip if this contains a service
                                 if (isset($c['service'])) {
                                     return false;
@@ -306,9 +336,9 @@ class Configuration implements ConfigurationInterface
                             ->thenInvalid("You should set at least the 'type', 'client_id' and the 'client_secret' of a resource owner.")
                         ->end()
                         ->validate()
-                            ->ifTrue(function($c) {
-                                // skip if this contains a service
-                                if (isset($c['service'])) {
+                            ->ifTrue(function ($c) {
+                                // Skip if this contains a service or a class
+                                if (isset($c['service']) || isset($c['class'])) {
                                     return false;
                                 }
 
@@ -334,9 +364,9 @@ class Configuration implements ConfigurationInterface
                             ->thenInvalid("All parameters are mandatory for types 'oauth2' and 'oauth1'. Check if you're missing one of: 'access_token_url', 'authorization_url', 'infos_url' and 'request_token_url' for 'oauth1'.")
                         ->end()
                         ->validate()
-                            ->ifTrue(function($c) {
+                            ->ifTrue(function ($c) {
                                 // skip if this contains a service
-                                if (isset($c['service'])) {
+                                if (isset($c['service']) || isset($c['class'])) {
                                     return false;
                                 }
 
@@ -361,7 +391,7 @@ class Configuration implements ConfigurationInterface
                             ->thenInvalid("At least the 'identifier', 'nickname' and 'realname' paths should be configured for 'oauth2' and 'oauth1' types.")
                         ->end()
                         ->validate()
-                            ->ifTrue(function($c) {
+                            ->ifTrue(function ($c) {
                                 if (isset($c['service'])) {
                                     // ignore paths & options if none were set
                                     return 0 !== count($c['paths']) || 0 !== count($c['options']) || 3 < count($c);
@@ -370,6 +400,16 @@ class Configuration implements ConfigurationInterface
                                 return false;
                             })
                             ->thenInvalid("If you're setting a 'service', no other arguments should be set.")
+                        ->end()
+                        ->validate()
+                            ->ifTrue(function ($c) {
+                                if (!isset($c['class'])) {
+                                    return false;
+                                }
+
+                                return 'oauth2' !== $c['type'] && 'oauth1' !== $c['type'];
+                            })
+                            ->thenInvalid("If you're setting a 'class', you must provide a 'oauth1' or 'oauth2' type")
                         ->end()
                     ->end()
                 ->end()
@@ -381,14 +421,11 @@ class Configuration implements ConfigurationInterface
     {
         $node
             ->children()
-                ->arrayNode('http_client')
+                ->arrayNode('http')
                     ->addDefaultsIfNotSet()
                     ->children()
-                        ->scalarNode('timeout')->defaultValue(5)->cannotBeEmpty()->end()
-                        ->booleanNode('verify_peer')->defaultTrue()->end()
-                        ->scalarNode('max_redirects')->defaultValue(5)->cannotBeEmpty()->end()
-                        ->booleanNode('ignore_errors')->defaultTrue()->end()
-                        ->scalarNode('proxy')->end()
+                        ->scalarNode('client')->defaultValue('httplug.client.default')->end()
+                        ->scalarNode('message_factory')->defaultValue('httplug.message_factory.default')->end()
                     ->end()
                 ->end()
             ->end()

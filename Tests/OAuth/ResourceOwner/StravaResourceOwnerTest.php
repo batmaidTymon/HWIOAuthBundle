@@ -14,14 +14,15 @@ namespace HWI\Bundle\OAuthBundle\Tests\OAuth\ResourceOwner;
 use HWI\Bundle\OAuthBundle\OAuth\ResourceOwner\StravaResourceOwner;
 
 /**
- * StravaResourceOwnerTest
+ * StravaResourceOwnerTest.
  *
  * @author Artem Genvald <genvaldartem@gmail.com>
  */
 class StravaResourceOwnerTest extends GenericOAuth2ResourceOwnerTest
 {
+    protected $resourceOwnerClass = StravaResourceOwner::class;
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected $userResponse = <<<json
 {
@@ -34,18 +35,18 @@ class StravaResourceOwnerTest extends GenericOAuth2ResourceOwnerTest
 json;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected $paths = array(
-        'identifier'     => 'id',
-        'realname'       => array('firstname', 'lastname'),
+        'identifier' => 'id',
+        'realname' => array('firstname', 'lastname'),
         'profilepicture' => 'profile_medium',
-        'email'          => 'email'
+        'email' => 'email',
     );
 
     public function testGetUserInformation()
     {
-        $this->mockBuzz($this->userResponse, 'application/json; charset=utf-8');
+        $this->mockHttpClient($this->userResponse, 'application/json; charset=utf-8');
 
         $userResponse = $this->resourceOwner->getUserInformation(array('access_token' => 'token'));
 
@@ -56,13 +57,5 @@ json;
         $this->assertEquals('token', $userResponse->getAccessToken());
         $this->assertNull($userResponse->getRefreshToken());
         $this->assertNull($userResponse->getExpiresIn());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function setUpResourceOwner($name, $httpUtils, array $options)
-    {
-        return new StravaResourceOwner($this->buzzClient, $httpUtils, $options, $name, $this->storage);
     }
 }

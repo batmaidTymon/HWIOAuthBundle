@@ -11,7 +11,6 @@
 
 namespace HWI\Bundle\OAuthBundle\Security\Http;
 
-use HWI\Bundle\OAuthBundle\OAuth\ResourceOwnerInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,7 +22,7 @@ use Symfony\Component\Security\Http\HttpUtils;
  *
  * @author Alexander <iam.asm89@gmail.com>
  */
-class ResourceOwnerMap implements ContainerAwareInterface
+class ResourceOwnerMap implements ContainerAwareInterface, ResourceOwnerMapInterface
 {
     /**
      * @var HttpUtils
@@ -49,14 +48,14 @@ class ResourceOwnerMap implements ContainerAwareInterface
      * Constructor.
      *
      * @param HttpUtils $httpUtils              HttpUtils
-     * @param array     $possibleResourceOwners Array with possible resource owners names.
-     * @param array     $resourceOwners         Array with configured resource owners.
+     * @param array     $possibleResourceOwners array with possible resource owners names
+     * @param array     $resourceOwners         array with configured resource owners
      */
     public function __construct(HttpUtils $httpUtils, array $possibleResourceOwners, $resourceOwners)
     {
-        $this->httpUtils              = $httpUtils;
+        $this->httpUtils = $httpUtils;
         $this->possibleResourceOwners = $possibleResourceOwners;
-        $this->resourceOwners         = $resourceOwners;
+        $this->resourceOwners = $resourceOwners;
     }
 
     /**
@@ -68,11 +67,7 @@ class ResourceOwnerMap implements ContainerAwareInterface
     }
 
     /**
-     * Check that resource owner with given name exists.
-     *
-     * @param string $name
-     *
-     * @return bool
+     * {@inheritdoc}
      */
     public function hasResourceOwnerByName($name)
     {
@@ -80,11 +75,7 @@ class ResourceOwnerMap implements ContainerAwareInterface
     }
 
     /**
-     * Gets the appropriate resource owner given the name.
-     *
-     * @param string $name
-     *
-     * @return null|ResourceOwnerInterface
+     * {@inheritdoc}
      */
     public function getResourceOwnerByName($name)
     {
@@ -96,11 +87,7 @@ class ResourceOwnerMap implements ContainerAwareInterface
     }
 
     /**
-     * Gets the appropriate resource owner for a request.
-     *
-     * @param Request $request
-     *
-     * @return null|array
+     * {@inheritdoc}
      */
     public function getResourceOwnerByRequest(Request $request)
     {
@@ -114,11 +101,7 @@ class ResourceOwnerMap implements ContainerAwareInterface
     }
 
     /**
-     * Gets the check path for given resource name.
-     *
-     * @param string $name
-     *
-     * @return null|string
+     * {@inheritdoc}
      */
     public function getResourceOwnerCheckPath($name)
     {
@@ -130,9 +113,7 @@ class ResourceOwnerMap implements ContainerAwareInterface
     }
 
     /**
-     * Get all the resource owners.
-     *
-     * @return array
+     * {@inheritdoc}
      */
     public function getResourceOwners()
     {

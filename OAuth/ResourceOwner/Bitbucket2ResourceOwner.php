@@ -11,62 +11,62 @@
 
 namespace HWI\Bundle\OAuthBundle\OAuth\ResourceOwner;
 
-use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
- * Bitbucket2ResourceOwner
+ * Bitbucket2ResourceOwner.
  *
  * @author David Sanchez <david38sanchez@gmail.com>
  */
 class Bitbucket2ResourceOwner extends GenericOAuth2ResourceOwner
 {
+    /**
+     * {@inheritdoc}
+     */
+    protected $paths = array(
+        'identifier' => 'uuid',
+        'nickname' => 'username',
+        'email' => 'email',
+        'realname' => 'display_name',
+        'profilepicture' => 'links.avatar.href',
+    );
 
-	/**
-	 * {@inheritDoc}
-	 */
-	protected $paths = array(
-		'identifier'     => 'uuid',
-		'nickname'       => 'username',
-		'email'          => 'email',
-		'realname'       => 'display_name',
-		'profilepicture' => 'links.avatar.href',
-	);
+    /**
+     * {@inheritdoc}
+     */
+    public function getUserInformation(array $accessToken, array $extraParameters = array())
+    {
+        $response = parent::getUserInformation($accessToken, $extraParameters);
+        $responseData = $response->getData();
 
-	/**
-	 * {@inheritDoc}
-	 */
-	protected function configureOptions(OptionsResolverInterface $resolver)
-	{
-		parent::configureOptions($resolver);
+        // fetch the email addresses linked to the account
+        if (empty($responseData['email'])) {
+            $content = $this->httpRequest($this->normalizeUrl($this->options['emails_url']), null, array('Authorization' => 'Bearer '.$accessToken['access_token']));
+            foreach ($this->getResponseContent($content)['values'] as $email) {
+                // we only need the primary email address
+                if (true === $email['is_primary']) {
+                    $responseData['email'] = $email['email'];
+                }
+            }
 
-		$resolver->setDefaults(array(
-			'authorization_url' => 'https://bitbucket.org/site/oauth2/authorize',
-			'access_token_url'  => 'https://bitbucket.org/site/oauth2/access_token',
-			'infos_url'         => 'https://api.bitbucket.org/2.0/user',
-			'emails_url'		=> 'https://api.bitbucket.org/2.0/user/emails'
-		));
-	}
+            $response->setData($responseData);
+        }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public function getUserInformation(array $accessToken, array $extraParameters = array())
-	{
-		$response = parent::getUserInformation($accessToken, $extraParameters);
-		$responseData = $response->getResponse();
+        return $response;
+    }
 
-		// fetch the email addresses linked to the account
-		if (empty($responseData['email'])) {
-			$content = $this->httpRequest($this->normalizeUrl($this->options['emails_url']), null, array('Authorization: Bearer '.$accessToken['access_token']));
-			foreach ($this->getResponseContent($content)['values'] as $email) {
-				// we only need the primary email address
-				if (true === $email['is_primary']) {
-					$responseData['email'] = $email['email'];
-				}
-			}
-			$response->setResponse($responseData);
-		}
+    /**
+     * {@inheritdoc}
+     */
+    protected function configureOptions(OptionsResolver $resolver)
+    {
+        parent::configureOptions($resolver);
 
-		return $response;
-	}
+        $resolver->setDefaults(array(
+            'authorization_url' => 'https://bitbucket.org/site/oauth2/authorize',
+            'access_token_url' => 'https://bitbucket.org/site/oauth2/access_token',
+            'infos_url' => 'https://api.bitbucket.org/2.0/user',
+            'emails_url' => 'https://api.bitbucket.org/2.0/user/emails',
+        ));
+    }
 }

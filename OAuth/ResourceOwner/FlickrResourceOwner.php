@@ -15,44 +15,42 @@ use HWI\Bundle\OAuthBundle\Security\Core\Authentication\Token\OAuthToken;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
- * FlickrResourceOwner
+ * FlickrResourceOwner.
  *
  * @author Dmitri Lakachauskis <lakiboy83@gmail.com>
  */
 class FlickrResourceOwner extends GenericOAuth1ResourceOwner
 {
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected $paths = array(
         'identifier' => 'user_nsid',
-        'nickname'   => 'username',
-        'realname'   => 'fullname',
+        'nickname' => 'username',
+        'realname' => 'fullname',
     );
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getAuthorizationUrl($redirectUri, array $extraParameters = array())
     {
         $token = $this->getRequestToken($redirectUri, $extraParameters);
 
-        $params = array(
-            'oauth_token'    => $token['oauth_token'],
-            'perms'          => $this->options['perms'],
+        return $this->normalizeUrl($this->options['authorization_url'], array(
+            'oauth_token' => $token['oauth_token'],
+            'perms' => $this->options['perms'],
             'nojsoncallback' => 1,
-        );
-
-        return $this->normalizeUrl($this->options['authorization_url'], $params);
+        ));
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getUserInformation(array $accessToken, array $extraParameters = array())
     {
         $response = $this->getUserResponse();
-        $response->setResponse($accessToken);
+        $response->setData($accessToken);
         $response->setResourceOwner($this);
         $response->setOAuthToken(new OAuthToken($accessToken));
 
@@ -60,7 +58,7 @@ class FlickrResourceOwner extends GenericOAuth1ResourceOwner
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function configureOptions(OptionsResolver $resolver)
     {
@@ -69,12 +67,12 @@ class FlickrResourceOwner extends GenericOAuth1ResourceOwner
         $resolver->setDefaults(array(
             'authorization_url' => 'http://www.flickr.com/services/oauth/authorize',
             'request_token_url' => 'http://www.flickr.com/services/oauth/request_token',
-            'access_token_url'  => 'http://www.flickr.com/services/oauth/access_token',
+            'access_token_url' => 'http://www.flickr.com/services/oauth/access_token',
 
             // Flickr don't use `infos_url`
-            'infos_url'         => null,
+            'infos_url' => null,
 
-            'perms'             => 'read',
+            'perms' => 'read',
         ));
     }
 }

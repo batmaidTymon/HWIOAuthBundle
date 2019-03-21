@@ -14,14 +14,15 @@ namespace HWI\Bundle\OAuthBundle\Tests\OAuth\ResourceOwner;
 use HWI\Bundle\OAuthBundle\OAuth\ResourceOwner\RunKeeperResourceOwner;
 
 /**
- * RunKeeperResourceOwnerTest
+ * RunKeeperResourceOwnerTest.
  *
  * @author Artem Genvald <genvaldartem@gmail.com>
  */
 class RunKeeperResourceOwnerTest extends GenericOAuth2ResourceOwnerTest
 {
+    protected $resourceOwnerClass = RunKeeperResourceOwner::class;
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected $userResponse = <<<json
 {
@@ -31,16 +32,16 @@ class RunKeeperResourceOwnerTest extends GenericOAuth2ResourceOwnerTest
 json;
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected $paths = array(
-        'realname'       => 'name',
-        'profilepicture' => 'medium_picture'
+        'realname' => 'name',
+        'profilepicture' => 'medium_picture',
     );
 
     public function testGetUserInformation()
     {
-        $this->mockBuzz($this->userResponse, 'application/json; charset=utf-8');
+        $this->mockHttpClient($this->userResponse, 'application/json; charset=utf-8');
 
         $userResponse = $this->resourceOwner->getUserInformation(array('access_token' => 'token'));
 
@@ -49,13 +50,5 @@ json;
         $this->assertEquals('token', $userResponse->getAccessToken());
         $this->assertNull($userResponse->getRefreshToken());
         $this->assertNull($userResponse->getExpiresIn());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function setUpResourceOwner($name, $httpUtils, array $options)
-    {
-        return new RunKeeperResourceOwner($this->buzzClient, $httpUtils, $options, $name, $this->storage);
     }
 }

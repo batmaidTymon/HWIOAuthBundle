@@ -11,31 +11,31 @@
 
 namespace HWI\Bundle\OAuthBundle\OAuth\ResourceOwner;
 
-use Buzz\Message\RequestInterface as HttpRequestInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
- * FacebookResourceOwner
+ * FacebookResourceOwner.
  *
  * @author Geoffrey Bachelet <geoffrey.bachelet@gmail.com>
  */
 class FacebookResourceOwner extends GenericOAuth2ResourceOwner
 {
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected $paths = array(
         'identifier' => 'id',
-        'nickname'   => 'name',
-        'firstname'   => 'first_name',
-        'lastname'   => 'last_name',
-        'realname'   => 'name',
-        'email'      => 'email',
+        'nickname' => 'name',
+        'firstname' => 'first_name',
+        'lastname' => 'last_name',
+        'realname' => 'name',
+        'email' => 'email',
+        'profilepicture' => 'picture.data.url',
     );
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getUserInformation(array $accessToken, array $extraParameters = array())
     {
@@ -45,9 +45,9 @@ class FacebookResourceOwner extends GenericOAuth2ResourceOwner
 
         return parent::getUserInformation($accessToken, $extraParameters);
     }
-    
+
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getAuthorizationUrl($redirectUri, array $extraParameters = array())
     {
@@ -64,7 +64,7 @@ class FacebookResourceOwner extends GenericOAuth2ResourceOwner
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getAccessToken(Request $request, $redirectUri, array $extraParameters = array())
     {
@@ -81,53 +81,42 @@ class FacebookResourceOwner extends GenericOAuth2ResourceOwner
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function revokeToken($token)
     {
         $parameters = array(
-            'client_id'     => $this->options['client_id'],
+            'client_id' => $this->options['client_id'],
             'client_secret' => $this->options['client_secret'],
         );
 
-        $response = $this->httpRequest($this->normalizeUrl($this->options['revoke_token_url'], array('access_token' => $token)), $parameters, array(), HttpRequestInterface::METHOD_DELETE);
+        $response = $this->httpRequest($this->normalizeUrl($this->options['revoke_token_url'], array('access_token' => $token)), $parameters, array(), 'DELETE');
 
         return 200 === $response->getStatusCode();
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function configureOptions(OptionsResolver $resolver)
     {
         parent::configureOptions($resolver);
 
         $resolver->setDefaults(array(
-            'authorization_url'   => 'https://www.facebook.com/v2.0/dialog/oauth',
-            'access_token_url'    => 'https://graph.facebook.com/v2.0/oauth/access_token',
-            'revoke_token_url'    => 'https://graph.facebook.com/v2.0/me/permissions',
-            'infos_url'           => 'https://graph.facebook.com/v2.0/me',
-
+            'authorization_url' => 'https://www.facebook.com/v2.8/dialog/oauth',
+            'access_token_url' => 'https://graph.facebook.com/v2.8/oauth/access_token',
+            'revoke_token_url' => 'https://graph.facebook.com/v2.8/me/permissions',
+            'infos_url' => 'https://graph.facebook.com/v2.8/me?fields=id,first_name,last_name,name,email,picture.type(large)',
             'use_commas_in_scope' => true,
-
-            'display'             => null,
-            'auth_type'           => null,
-            'appsecret_proof'     => false,
+            'display' => null,
+            'auth_type' => null,
+            'appsecret_proof' => false,
         ));
 
-        // Symfony <2.6 BC
-        if (method_exists($resolver, 'setDefined')) {
-            $resolver
-                ->setAllowedValues('display', array('page', 'popup', 'touch', null)) // @link https://developers.facebook.com/docs/reference/dialogs/#display
-                ->setAllowedValues('auth_type', array('rerequest', null)) // @link https://developers.facebook.com/docs/reference/javascript/FB.login/
-                ->setAllowedTypes('appsecret_proof', 'bool') // @link https://developers.facebook.com/docs/graph-api/securing-requests
-            ;
-        } else {
-            $resolver->setAllowedValues(array(
-                'display'   => array('page', 'popup', 'touch', null),
-                'auth_type' => array('rerequest', null),
-                'appsecret_proof' => array(true, false),
-            ));
-        }
+        $resolver
+            ->setAllowedValues('display', array('page', 'popup', 'touch', null)) // @link https://developers.facebook.com/docs/reference/dialogs/#display
+            ->setAllowedValues('auth_type', array('rerequest', null)) // @link https://developers.facebook.com/docs/reference/javascript/FB.login/
+            ->setAllowedTypes('appsecret_proof', 'bool') // @link https://developers.facebook.com/docs/graph-api/securing-requests
+        ;
     }
 }

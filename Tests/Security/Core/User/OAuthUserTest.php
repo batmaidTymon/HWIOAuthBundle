@@ -12,8 +12,9 @@
 namespace HWI\Bundle\OAuthBundle\Tests\Security\Core\User;
 
 use HWI\Bundle\OAuthBundle\Security\Core\User\OAuthUser;
+use PHPUnit\Framework\TestCase;
 
-class OAuthUserTest extends \PHPUnit_Framework_TestCase
+class OAuthUserTest extends TestCase
 {
     /**
      * @var OAuthUser
@@ -56,7 +57,7 @@ class OAuthUserTest extends \PHPUnit_Framework_TestCase
     public function testEquals()
     {
         $otherUser = new OAuthUser('other');
-        $sameUser  = new OAuthUser('asm89');
+        $sameUser = new OAuthUser('asm89');
 
         $this->assertFalse($this->user->equals($otherUser));
         $this->assertTrue($this->user->equals($sameUser));

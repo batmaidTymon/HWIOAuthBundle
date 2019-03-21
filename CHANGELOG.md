@@ -1,5 +1,93 @@
 Changelog
 =========
+## 0.6.3 (2018-07-31)
+* Fixed: Vkontakte profile picture & nickname path,
+* Fixed: `Content-Length` header must be a string,
+* Fixed: Upgraded GitLab end point to v4,
+* Fixed: Resource owner map parameters must be public,
+* Fixed: Azure resource owner `infos_url` should not be empty,
+* Fixed: Don't start sessions twice & don't start sessions if already started,
+* Fixed: Updated BitBucket docs,
+* Added: Further compatibility changes for Symfony 4.1,
+* Added: LinkedIn `first-` & `last-` names,
+* Added: Facebook profile picture
+
+## 0.6.2 (2018-03-28)
+* Fixed: VK requires API version now,
+* Fixed: Updated Slack resource owner to use new Slack API methods,
+* Fixed: Changing authorization and access token to v2 for LinkedIn,
+* Fixed: Fix double call of `getUserInformation()` in `ConnectController`,
+* Fixed: Fix serialization of `AccountNotLinkedException`,
+* Fixed: Check for grant_rule value `IS_AUTHENTICATED_FULLY` in DI configuration,
+* Fixed: Don't execute `OAuthProvider::refreshAccessToken()` when there is no refresh token
+
+## 0.6.1 (2018-01-23)
+* BC BREAK: Replaced `PHPUnit_Framework_TestCase` with `PHPUnit\Framework\TestCase` in tests,
+* Added: Implemented `getUserInformation()` for Dropbox v2,
+* Fixed: Headers passed to `httpRequest()` method in various resource owners,
+* Fixed: Marked some services as `public` to make code compatible with Symfony 4
+
+## 0.6.0 (2017-12-01)
+* BC BREAK: Fully replaced Buzz library with usage of HTTPlug & Guzzle 6,
+* BC BREAK: `hwi.http_client` config options are remove. HTTP configuration must rely on the HTTPlug client,
+* BC BREAK: Template engine other than Twig are no longer supported,
+* BC BREAK: Option `hwi_oauth.templating_engine` was removed,
+* Added: Symfony 4 support,
+* Added: `php-http/httplug-bundle` support, to auto-provide needed HTTPlug services and get full Symfony integration,
+* Added: `hwi.http.client` and `hwi.http.message_factory` config keys to provide your own HTTPlug services,
+* Added: `HWIOAuthEvents`,
+* Added: `ResourceOwnerInterface::addPaths()` method for easier managing paths in resource owners,
+* Fixed: Update Facebook API to v2.8,
+
+## 0.5.3 (2017-01-08)
+* Fixed: Bitbucket2 resource owner,
+* Fixed: GitHub resource owner documentation,
+* Fixed: Don't require any form for the connect feature,
+* Fixed: Uncaught exception with custom error page,
+* Fixed: `php-cs-fixer` updated to latest version & run on base code
+
+## 0.5.2 (2016-12-12)
+* Fixed: Prevent uncaught exception when redirecting to invalid route,
+* Fixed: Add more details too exception when account was not linked,
+* Fixed: Odnoklassinki resource owner,
+* Fixed: Office365 resource owner,
+* Fixed: StackExchange resource owner,
+* Fixed: WeChat resource owner,
+* Fixed: WindowsLive resource owner
+
+## 0.5.1 (2016-10-03)
+* Fixed error that could occur with message "302 Header already sent",
+* Exclude tests from Composer autoloader
+
+## 0.5.0 (2016-09-11)
+* Fixed: `OAuthHelper` should fallback to new `Request` in case of receiving `null`,
+* Fixed: Better `FOSUserBundle` integration,
+* Fixed: Serialization issue in `WechatResourceOwner`,
+* Fixed: Incorrect refresh token in `WechatResourceOwner`,
+* Fixed: Broken `TrelloResourceOwner`,
+* Fixed: Removed dead code in `OAuthProvider`,
+* Fixed: Update Facebook API to v2.7,
+* Added: Symfony 3 support,
+* Added: Redirect to `target_path` after successful registration/connection,
+* Added: Asana resource owner,
+* Added: Bitbucket resource owner,
+* Added: Clever resource owner,
+* Added: Itembase resource owner,
+* Added: Jawbon resource owner,
+* Added: Office365 resource owner,
+* Added: Wunderlist resource owner,
+* Added: Hungarian translation
+
+## 0.4.3 (2016-09-11)
+* Fixed: Request parameters are not copied into new Request on forward,
+* Fixed: Fixed scope deprecating message,
+* Fixed: Resolved deprecated message in ConnectController,
+* Fixed: Removed usage of deprecated code in tests
+
+## 0.4.2 (2016-07-27)
+* Fixed: Change Discogs URL from http to https,
+* Fixed: Update Facebook API URLs to not use outdated ones
+
 ## 0.4.1 (2016-03-08)
 * Fixed: Remove usage of deprecated Twig function `form_enctype` & replace with usage of `form_start`/`form_end`,
 * Fixed: Mark as not fully compatible with Symfony `~3.0`,

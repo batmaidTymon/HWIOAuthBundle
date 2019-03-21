@@ -18,6 +18,7 @@ use HWI\Bundle\OAuthBundle\OAuth\ResourceOwner\DeezerResourceOwner;
  */
 class DeezerResourceOwnerTest extends GenericOAuth2ResourceOwnerTest
 {
+    protected $resourceOwnerClass = DeezerResourceOwner::class;
     protected $userResponse = <<<json
 {
     "id": 3038840,
@@ -40,24 +41,19 @@ class DeezerResourceOwnerTest extends GenericOAuth2ResourceOwnerTest
 }
 json;
     protected $paths = array(
-        'identifier'     => 'id',
-        'nickname'       => 'name',
-        'realname'       => 'firstname',
-        'email'          => 'email',
-        'firstname'      => 'firstname',
-        'lastname'       => 'lastname',
+        'identifier' => 'id',
+        'nickname' => 'name',
+        'realname' => 'firstname',
+        'email' => 'email',
+        'firstname' => 'firstname',
+        'lastname' => 'lastname',
         'profilepicture' => 'picture',
-        'gender'         => 'gender'
+        'gender' => 'gender',
     );
-
-    protected function setUpResourceOwner($name, $httpUtils, array $options)
-    {
-        return new DeezerResourceOwner($this->buzzClient, $httpUtils, $options, $name, $this->storage);
-    }
 
     public function testGetUserInformation()
     {
-        $this->mockBuzz($this->userResponse);
+        $this->mockHttpClient($this->userResponse);
 
         $userResponse = $this->resourceOwner->getUserInformation(array('access_token' => 'token'));
 
