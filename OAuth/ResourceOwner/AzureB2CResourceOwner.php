@@ -11,10 +11,8 @@
 
 namespace HWI\Bundle\OAuthBundle\OAuth\ResourceOwner;
 
-use HWI\Bundle\OAuthBundle\Security\Core\Authentication\Token\IdToken;
-use HWI\Bundle\OAuthBundle\Security\Core\Authentication\Token\OAuthToken;
+use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Buzz\Message\MessageInterface as HttpMessageInterface;
 
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 
@@ -107,7 +105,7 @@ class AzureB2CResourceOwner extends GenericOAuth2ResourceOwner
             ]);
     }
 
-    protected function getResponseContent(HttpMessageInterface $rawResponse)
+    protected function getResponseContent(ResponseInterface $rawResponse)
     {
         $response = parent::getResponseContent($rawResponse);
         //The id_token should be used as the access_token according to
@@ -122,11 +120,10 @@ class AzureB2CResourceOwner extends GenericOAuth2ResourceOwner
     public function getUserInformation(array $accessToken, array $extraParameters = array())
     {
         // from http://stackoverflow.com/a/28748285/624544
-        list(, $jwt,) = explode('.', $accessToken['id_token'], 3);
+        list(, $jwt) = explode('.', $accessToken['id_token'], 3);
 
         // if the token was urlencoded, do some fixes to ensure that it is valid base64 encoded
-        $jwt = str_replace('-', '+', $jwt);
-        $jwt = str_replace('_', '/', $jwt);
+        $jwt = str_replace(array('-', '_'), array('+', '/'), $jwt);
 
         // complete token if needed
         switch (strlen($jwt) % 4) {
@@ -134,9 +131,6 @@ class AzureB2CResourceOwner extends GenericOAuth2ResourceOwner
                 break;
 
             case 2:
-                $jwt .= '=';
-                break;
-
             case 3:
                 $jwt .= '=';
                 break;
@@ -145,11 +139,8 @@ class AzureB2CResourceOwner extends GenericOAuth2ResourceOwner
                 throw new \InvalidArgumentException('Invalid base64 format sent back');
         }
 
-        $response = $this->getUserResponse();
-        $response->setResponse(base64_decode($jwt));
-
-        $response->setResourceOwner($this);
-        $response->setOAuthToken(new OAuthToken($accessToken));
+        $response = parent::getUserInformation($accessToken, $extraParameters);
+        $response->setData(base64_decode($jwt));
 
         return $response;
     }
