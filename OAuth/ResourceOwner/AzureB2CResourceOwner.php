@@ -110,7 +110,10 @@ class AzureB2CResourceOwner extends GenericOAuth2ResourceOwner
         $response = parent::getResponseContent($rawResponse);
         //The id_token should be used as the access_token according to
         //https://azure.microsoft.com/en-us/documentation/articles/active-directory-b2c-reference-oidc/
-        $response["access_token"] = $response['id_token'];
+        if (isset($response['id_token'])) {
+            //the token is not set in case of configuration errors
+            $response["access_token"] = $response['id_token'];
+        }
         return $response;
     }
 
@@ -155,7 +158,7 @@ class AzureB2CResourceOwner extends GenericOAuth2ResourceOwner
         $resolver->setRequired(array('sign_in_policy', 'application'));
 
         $resolver->setDefaults(array(
-            'infos_url' => '',
+            'infos_url' => 'https://graph.windows.net/contosob2c.onmicrosoft.com/users/?api-version=1.6',
             'authorization_url' => 'https://login.microsoftonline.com/%s/oauth2/v2.0/authorize',
             'access_token_url' => 'https://login.microsoftonline.com/%s/oauth2/v2.0/token?p=%s',
             'scope' => 'openid offline_access',
