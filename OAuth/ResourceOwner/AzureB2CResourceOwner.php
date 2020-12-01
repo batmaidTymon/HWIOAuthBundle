@@ -167,4 +167,9 @@ class AzureB2CResourceOwner extends GenericOAuth2ResourceOwner
             'csrf' => true
         ));
     }
+
+    private function generateNonce()
+    {
+        return md5(microtime(true).uniqid('', true));
+    }
 }
